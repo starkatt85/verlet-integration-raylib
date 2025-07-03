@@ -9,12 +9,12 @@
 #define FCOLOR RAYWHITE
 #define PARTICLE_RADIUS 10
 
-int PARTICLE_COUNT = 100;
+int PARTICLE_COUNT = 300;
 
 
 Vector2 generate_spawn(int xlimit, int ylimit) {
     // srand(time(NULL));
-    Vector2 spawnPoint = {rand() % xlimit, rand() % ylimit};
+    Vector2 spawnPoint = {(float) (rand() % xlimit), (float) (rand() % ylimit)};
     spawnPoint.x += 20;
     spawnPoint.y += 20;
     return spawnPoint;
@@ -22,7 +22,7 @@ Vector2 generate_spawn(int xlimit, int ylimit) {
 
 // Random bright pastel color (low saturation, vibrant colors) generation function
 Color generate_color() {
-    Color color = ColorFromHSV(rand() % 360, 0.5, 0.8);
+    Color color = ColorFromHSV((float) (rand() % 360), 0.3, 1.0);
     // color.a = 255;
     return color;
 }
@@ -89,7 +89,7 @@ void apply_window_contraints(VerletObject *obj) {
 
 // collision_axis based collision system, powered by O(n^2) algorithm and brute force
 void solve_collisions(std::vector<VerletObject> *verlet_objects) {
-    const uint32_t object_count = verlet_objects->size();
+    const size_t object_count = verlet_objects->size();
     auto& object_container = *verlet_objects;
     for (uint32_t i = 0; i < object_count; i++) {
         VerletObject& obj = object_container[i];
@@ -124,7 +124,7 @@ void spawn_particle(std::vector<VerletObject> *verlet_objects) {
         }
     }
     obj.acceleration = {0.0, 0.0};
-    obj.radius = rand() % 10 + 5;
+    obj.radius = (float) (rand() % 10 + 5);
     obj.current_position = spawn_point;
     obj.old_position = obj.current_position;
     obj.color = generate_color();
@@ -166,7 +166,7 @@ void main() {
             }
         }
         obj.acceleration = {0.0, 0.0};
-        obj.radius = rand() % 10 + 5;
+        obj.radius = (float) (rand() % 10 + 5);
         obj.current_position = spawn_point;
         obj.old_position = obj.current_position;
         obj.color = generate_color();
@@ -200,9 +200,9 @@ void main() {
         
         EndDrawing();
 
-        if (GetFPS() > 30) {
-            spawn_particle(&verlet_objects);
-        }
+        // if (GetFPS() > 30) {
+        //     spawn_particle(&verlet_objects);
+        // }
     }
 
     CloseWindow();
