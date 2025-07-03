@@ -7,15 +7,24 @@
 #define ACOLOR {0x88, 0xFF, 0x77, 0xBB}
 #define BCOLOR {0x11, 0x11, 0x11, 0xFF}
 #define FCOLOR RAYWHITE
-#define PARTICLE_RADIUS 8
+#define PARTICLE_RADIUS 10
 
-int PARTICLE_COUNT = 50;
+int PARTICLE_COUNT = 100;
 
 
 Vector2 generate_spawn(int xlimit, int ylimit) {
-    // srand(time(0));
+    // srand(time(NULL));
     Vector2 spawnPoint = {rand() % xlimit, rand() % ylimit};
+    spawnPoint.x += 20;
+    spawnPoint.y += 20;
     return spawnPoint;
+}
+
+// Random bright pastel color (low saturation, vibrant colors) generation function
+Color generate_color() {
+    Color color = ColorFromHSV(rand() % 360, 0.5, 0.8);
+    // color.a = 255;
+    return color;
 }
 
 struct VerletObject
@@ -59,6 +68,25 @@ void apply_contraints(VerletObject *obj) {
     }
 }
 
+// new contraint function that uses the same logic as above, but this time the constraint is the whole window.
+void apply_window_contraints(VerletObject *obj) {
+    const int screenWidth = GetScreenWidth();
+    const int screenHeight = GetScreenHeight();
+    const Vector2 position = obj->current_position;
+
+    if (position.x - obj->radius < 0) {
+        obj->current_position.x = obj->radius;
+    } else if (position.x + obj->radius > screenWidth) {
+        obj->current_position.x = screenWidth - obj->radius;
+    }
+
+    if (position.y - obj->radius < 0) {
+        obj->current_position.y = obj->radius;
+    } else if (position.y + obj->radius > screenHeight) {
+        obj->current_position.y = screenHeight - obj->radius;
+    }
+}
+
 // collision_axis based collision system, powered by O(n^2) algorithm and brute force
 void solve_collisions(std::vector<VerletObject> *verlet_objects) {
     const uint32_t object_count = verlet_objects->size();
@@ -80,16 +108,28 @@ void solve_collisions(std::vector<VerletObject> *verlet_objects) {
 }
 
 void spawn_particle(std::vector<VerletObject> *verlet_objects) {
-    VerletObject new_obj;
-    Vector2 spawnPoint = generate_spawn(1600, 900);
-    do {
-        spawnPoint = generate_spawn(1600, 900);
-    } while (Vector2Length(Vector2Subtract(spawnPoint, Vector2{800, 450})) < 400);
-    new_obj.current_position = spawnPoint;
-    new_obj.old_position = new_obj.current_position;
-    verlet_objects->push_back(new_obj);
+    VerletObject obj;
+    Vector2 spawn_point = generate_spawn(GetScreenWidth() - 40, GetScreenHeight() - 40);
+    bool overlap = true;
+    while (overlap) {
+        spawn_point = generate_spawn(GetScreenWidth() - 40, GetScreenHeight() - 40);
+        overlap = false;
+        for (auto& other_obj : *verlet_objects) {
+            Vector2 to_obj = Vector2Subtract(spawn_point, other_obj.current_position);
+            float dist = Vector2Length(to_obj);
+            if (dist < (obj.radius + other_obj.radius)) {
+                overlap = true;
+                break;
+            }
+        }
+    }
+    obj.acceleration = {0.0, 0.0};
+    obj.radius = rand() % 10 + 5;
+    obj.current_position = spawn_point;
+    obj.old_position = obj.current_position;
+    obj.color = generate_color();
+    verlet_objects->push_back(obj);
     PARTICLE_COUNT++;
-
 }
 
 std::vector<VerletObject> verlet_objects;
@@ -98,32 +138,47 @@ void update(float dt) {
     for (auto& obj : verlet_objects) {
         apply_gravity(&obj);
         update_position(&obj, dt); // Call update_positions here
-        apply_contraints(&obj);
+        apply_window_contraints(&obj);
     }
     solve_collisions(&verlet_objects);
 }
 
 void main() {
 
-    for(int i = 0; i < PARTICLE_COUNT; i++) {
-        VerletObject obj;
-        Vector2 spawnPoint = {0.0, 0.0};
-        do {
-            spawnPoint = generate_spawn(1600, 900);
-        } while (Vector2Length(Vector2Subtract(spawnPoint, Vector2{800, 450})) < 400);
-        obj.current_position = spawnPoint;
-        obj.old_position = obj.current_position;
-        verlet_objects.push_back(obj);
-    }
-
     SetTargetFPS(60);
     InitWindow(1600, 900, "Verlet Integration");
+
+    // Initial Particle generation
+    for(int i = 0; i < PARTICLE_COUNT; i++) {
+        VerletObject obj;
+        Vector2 spawn_point = generate_spawn(GetScreenWidth() - 40, GetScreenHeight() - 40);
+        bool overlap = true;
+        while (overlap) {
+            spawn_point = generate_spawn(GetScreenWidth() - 40, GetScreenHeight() - 40);
+            overlap = false;
+            for (auto& other_obj : verlet_objects) {
+                Vector2 to_obj = Vector2Subtract(spawn_point, other_obj.current_position);
+                float dist = Vector2Length(to_obj);
+                if (dist < (obj.radius + other_obj.radius)) {
+                    overlap = true;
+                    break;
+                }
+            }
+        }
+        obj.acceleration = {0.0, 0.0};
+        obj.radius = rand() % 10 + 5;
+        obj.current_position = spawn_point;
+        obj.old_position = obj.current_position;
+        obj.color = generate_color();
+        verlet_objects.push_back(obj);
+    }
     
 
     while(!WindowShouldClose()) {
 
         if (IsKeyPressed(KEY_SPACE)) {
             spawn_particle(&verlet_objects);
+            // update(GetFrameTime());
         };
 
         BeginDrawing();
@@ -145,9 +200,9 @@ void main() {
         
         EndDrawing();
 
-        // if (GetFPS() > 30) {
-        //     spawn_particle(&verlet_objects);
-        // }
+        if (GetFPS() > 30) {
+            spawn_particle(&verlet_objects);
+        }
     }
 
     CloseWindow();
