@@ -1,3 +1,7 @@
+# Verlet Integration - using Raylib
+
+Currently has no optimization, will be optimized in future.
+
 To compile and run the simulation, use in the project directory itself. No need to cd into `src`
 
 ```shell
