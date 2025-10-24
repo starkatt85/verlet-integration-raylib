@@ -1,32 +1,17 @@
-cmake_minimum_required(VERSION 3.10)
-project(main)
+cmake_minimum_required(VERSION 3.15)
+project(app)
 
-# Set the CMake generator to Ninja
-set(CMAKE_GENERATOR "Ninja")
+find_package(raylib 3.0 REQUIRED) # Requires at least version 3.0
 
-# Set the C compiler to the one provided by MSVC Build Tools
-set(CMAKE_C_COMPILER "cl.exe")
+set(CMAKE_C_STANDARD 11) # Requires C11 standard
 
-# Set the C++ compiler to the one provided by MSVC Build Tools
-set(CMAKE_CXX_COMPILER "cl.exe")
-
-# Set the C++ standard to C++20
-# set(CMAKE_CXX_STANDARD 17)
-
-# Set the include directory for Raylib
-set(RAYLIB_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/raylib/include")
-
-# Set the library directory for Raylib
-set(RAYLIB_LIBRARY_DIR "${CMAKE_CURRENT_SOURCE_DIR}/raylib/lib")
-
-# Add the Raylib libraries to the link directories
-link_directories(${RAYLIB_LIBRARY_DIR})
-
-# Add the Raylib include directory to the include path
-include_directories(${RAYLIB_INCLUDE_DIR})
-
-# Add the executable
 add_executable(${PROJECT_NAME} src/main.cpp)
 
-# Link the Raylib libraries to the executable
-target_link_libraries(${PROJECT_NAME} raylib.lib opengl32.lib kernel32.lib user32.lib gdi32.lib winmm.lib)
+target_link_libraries(${PROJECT_NAME} raylib)
+
+# Checks if OSX and links appropriate frameworks (only required on MacOS)
+if (APPLE)
+    target_link_libraries(${PROJECT_NAME} "-framework IOKit")
+    target_link_libraries(${PROJECT_NAME} "-framework Cocoa")
+    target_link_libraries(${PROJECT_NAME} "-framework OpenGL")
+endif()

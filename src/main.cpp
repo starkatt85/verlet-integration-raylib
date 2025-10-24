@@ -3,6 +3,7 @@
 #include <vector>
 #include <cstdlib>
 #include <ctime>
+#include <cstdint>
 
 // defining certain colors, where "color" is a struct of {r, g, b, a} with each value in 2 digit hex codes (raylib provides color struct)
 #define ACOLOR {0x88, 0xFF, 0x77, 0xBB} // accent color, greenish tint
@@ -156,7 +157,7 @@ void update(float dt) {
     solve_collisions(&verlet_objects);
 }
 
-void main() {
+int main() {
 
     SetTargetFPS(60);
     InitWindow(1600, 900, "Verlet Integration");
