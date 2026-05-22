@@ -3,3 +3,9 @@ build/
 build.ps1
 run.ps1
 How.md
+*.log
+*.tmp
+*.bak
+*.swp
+*.swo
+*.pbd
