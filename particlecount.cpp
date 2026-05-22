@@ -1,1 +1,0 @@
-int PARTICLE_NUMBER = 300; // Initial particle count, can be changed by user input
