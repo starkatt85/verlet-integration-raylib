@@ -9,3 +9,4 @@ How.md
 *.swp
 *.swo
 *.pbd
+src/*.pbd
