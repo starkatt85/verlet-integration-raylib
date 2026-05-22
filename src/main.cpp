@@ -10,7 +10,7 @@
 #define FCOLOR RAYWHITE // foreground color (RAYWHITE is a predefined color in raylib, which is white with very mild gray)
 #define PARTICLE_RADIUS 10 // particle radius integer
 
-int PARTICLE_COUNT = 300;
+int PARTICLE_COUNT = 0;
 
 // Generates a random spawn point for a particle within the window boundaries, essentially generates a valid vector and returns it
 Vector2 generate_spawn(int xlimit, int ylimit) {
@@ -158,7 +158,7 @@ void update(float dt) {
 
 void main() {
 
-    SetTargetFPS(60);
+    SetTargetFPS(120);
     InitWindow(1600, 900, "Verlet Integration");
 
     // Initial Particle generation, generates PARTICLE_COUNT number of particles with all those non overlapping safety measures defined as same as in spawn_particle, for some reason, when using pointers and stuff, it felt error free to copy paste the code rather than calling the function.
@@ -216,9 +216,9 @@ void main() {
         
         EndDrawing();
 
-        // if (GetFPS() > 30) {
-        //     spawn_particle(&verlet_objects);
-        // }
+        if (GetFPS() > 60) {
+            spawn_particle(&verlet_objects);
+        }
     }
 
     CloseWindow();
